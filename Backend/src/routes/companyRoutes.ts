@@ -2,10 +2,15 @@ import { Router } from "express";
 import { pool } from "../database/connection";
 import { v4 as uuidv4 } from "uuid";
 import { authMiddleware } from "../middlewares/authMiddleware";
+import { roleMiddleware } from "../middlewares/roleMiddleware";
 
 const router = Router();
 
-router.post("/", authMiddleware, async (req, res) => {
+router.post(
+  "/",
+  authMiddleware,
+  roleMiddleware(["ADMIN", "CONTADOR"]),
+  async (req, res) => {
   try {
     const {
       razao_social,
