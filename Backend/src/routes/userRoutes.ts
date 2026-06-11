@@ -2,10 +2,16 @@ import { Router } from "express";
 import { pool } from "../database/connection";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcryptjs";
+import { authMiddleware } from "../middlewares/authMiddleware";
+import { roleMiddleware } from "../middlewares/roleMiddleware";
 
 const router = Router();
 
-router.post("/", async (req, res) => {
+router.post(
+  "/",
+  authMiddleware,
+  roleMiddleware(["ADMIN"]),
+  async (req, res) => {
   try {
     const { nome, email, senha, tipo } = req.body;
     const senhaHash = await bcrypt.hash(senha, 10);
