@@ -1,23 +1,21 @@
 import express from "express";
 import { pool } from "./database/connection";
+import userRoutes from "./routes/userRoutes";
 
 const app = express();
 
-app.get("/", async (req, res) => {
-  try {
-    const result = await pool.query("SELECT NOW()");
+app.use(express.json());
 
-    res.json({
-      message: "FiscalFlow API Online",
-      database: "Conectado",
-      horarioBanco: result.rows[0],
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Erro ao conectar ao banco",
-      error,
-    });
-  }
+app.use("/usuarios", userRoutes);
+
+app.get("/", async (req, res) => {
+  const result = await pool.query("SELECT NOW()");
+
+  res.json({
+    message: "FiscalFlow API Online",
+    database: "Conectado",
+    horarioBanco: result.rows[0],
+  });
 });
 
 const PORT = 3000;
