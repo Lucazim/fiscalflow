@@ -6,6 +6,7 @@ import testRoutes from "./routes/testRoutes";
 import companyRoutes from "./routes/companyRoutes";
 import vinculoRoutes from "./routes/vinculoRoutes";
 import minhaEmpresaRoutes from "./routes/minhaEmpresaRoutes";
+import meRoutes from "./routes/meRoutes";
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use("/teste", testRoutes);
 app.use("/empresas", companyRoutes);
 app.use("/vinculos", vinculoRoutes);
 app.use("/minha-empresa", minhaEmpresaRoutes);
+app.use("/me", meRoutes);
 
 app.get("/", async (req, res) => {
   const result = await pool.query("SELECT NOW()");
