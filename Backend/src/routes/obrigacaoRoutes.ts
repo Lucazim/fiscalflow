@@ -130,4 +130,62 @@ router.get(
   }
 );
 
+router.patch(
+  "/:id/status",
+  authMiddleware,
+  roleMiddleware(["ADMIN", "CONTADOR"]),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      const statusPermitidos = [
+        "PENDENTE",
+        "EM_PROCESSAMENTO",
+        "ENVIADO",
+        "PAGO",
+        "ATRASADO",
+        "CANCELADO",
+      ];
+
+      if (!statusPermitidos.includes(status)) {
+        return res.status(400).json({
+          message: "Status inválido",
+        });
+      }
+
+      const obrigacao = await pool.query(
+        "SELECT id FROM obrigacoes WHERE id = $1",
+        [id]
+      );
+
+      if (obrigacao.rows.length === 0) {
+        return res.status(404).json({
+          message: "Obrigação não encontrada",
+        });
+      }
+
+      await pool.query(
+        `
+        UPDATE obrigacoes
+        SET status = $1
+        WHERE id = $2
+        `,
+        [status, id]
+      );
+
+      return res.json({
+        message: "Status atualizado com sucesso",
+      });
+
+    } catch (error) {
+      console.error(error);
+
+      return res.status(500).json({
+        message: "Erro ao atualizar status",
+      });
+    }
+  }
+);
+
 export default router;
