@@ -130,6 +130,80 @@ router.get(
   }
 );
 
+router.get(
+  "/:id",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const usuario = (req as any).usuario;
+
+      let result;
+
+      if (
+        usuario.tipo === "ADMIN" ||
+        usuario.tipo === "CONTADOR"
+      ) {
+        result = await pool.query(
+          `
+          SELECT
+            o.id,
+            o.tipo,
+            o.competencia,
+            o.vencimento,
+            o.status,
+            o.observacao,
+            e.id as empresa_id,
+            e.razao_social
+          FROM obrigacoes o
+          INNER JOIN empresas e
+            ON e.id = o.empresa_id
+          WHERE o.id = $1
+          `,
+          [id]
+        );
+      } else {
+        result = await pool.query(
+          `
+          SELECT
+            o.id,
+            o.tipo,
+            o.competencia,
+            o.vencimento,
+            o.status,
+            o.observacao,
+            e.id as empresa_id,
+            e.razao_social
+          FROM obrigacoes o
+          INNER JOIN empresas e
+            ON e.id = o.empresa_id
+          INNER JOIN empresa_usuarios eu
+            ON eu.empresa_id = e.id
+          WHERE o.id = $1
+            AND eu.usuario_id = $2
+          `,
+          [id, usuario.id]
+        );
+      }
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          message: "Obrigação não encontrada",
+        });
+      }
+
+      return res.json(result.rows[0]);
+
+    } catch (error) {
+      console.error(error);
+
+      return res.status(500).json({
+        message: "Erro ao buscar obrigação",
+      });
+    }
+  }
+);
+
 router.patch(
   "/:id/status",
   authMiddleware,
