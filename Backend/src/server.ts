@@ -8,6 +8,7 @@ import vinculoRoutes from "./routes/vinculoRoutes";
 import minhaEmpresaRoutes from "./routes/minhaEmpresaRoutes";
 import meRoutes from "./routes/meRoutes";
 import obrigacaoRoutes from "./routes/obrigacaoRoutes";
+import dashboardRoutes from "./routes/dashboardRoutes";
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use("/vinculos", vinculoRoutes);
 app.use("/minha-empresa", minhaEmpresaRoutes);
 app.use("/me", meRoutes);
 app.use("/obrigacoes", obrigacaoRoutes);
+app.use("/dashboard", dashboardRoutes);
 
 app.get("/", async (req, res) => {
   const result = await pool.query("SELECT NOW()");
