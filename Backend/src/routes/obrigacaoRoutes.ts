@@ -68,4 +68,66 @@ router.post(
   }
 );
 
+router.get(
+  "/",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const usuario = (req as any).usuario;
+
+      let result;
+
+      if (
+        usuario.tipo === "ADMIN" ||
+        usuario.tipo === "CONTADOR"
+      ) {
+        result = await pool.query(
+          `
+          SELECT
+            o.id,
+            o.tipo,
+            o.competencia,
+            o.vencimento,
+            o.status,
+            e.razao_social
+          FROM obrigacoes o
+          INNER JOIN empresas e
+            ON e.id = o.empresa_id
+          ORDER BY o.vencimento
+          `
+        );
+      } else {
+        result = await pool.query(
+          `
+          SELECT
+            o.id,
+            o.tipo,
+            o.competencia,
+            o.vencimento,
+            o.status,
+            e.razao_social
+          FROM obrigacoes o
+          INNER JOIN empresas e
+            ON e.id = o.empresa_id
+          INNER JOIN empresa_usuarios eu
+            ON eu.empresa_id = e.id
+          WHERE eu.usuario_id = $1
+          ORDER BY o.vencimento
+          `,
+          [usuario.id]
+        );
+      }
+
+      return res.json(result.rows);
+
+    } catch (error) {
+      console.error(error);
+
+      return res.status(500).json({
+        message: "Erro ao listar obrigações",
+      });
+    }
+  }
+);
+
 export default router;
