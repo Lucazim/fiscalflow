@@ -104,7 +104,7 @@ router.get(
           `
           SELECT
             o.id,
-            o.tipo AS tipo,
+            t.nome AS tipo,
             o.competencia,
             o.vencimento,
             o.status,
@@ -171,7 +171,7 @@ router.get(
           `
           SELECT
             o.id,
-            o.tipo,
+            t.nome AS tipo,
             o.competencia,
             o.vencimento,
             o.status,
@@ -181,6 +181,8 @@ router.get(
           FROM obrigacoes o
           INNER JOIN empresas e
             ON e.id = o.empresa_id
+          INNER JOIN tipos_obrigacao t
+            ON t.id = o.tipo_obrigacao_id
           WHERE o.id = $1
           `,
           [id]
