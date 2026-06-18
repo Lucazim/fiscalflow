@@ -104,7 +104,7 @@ router.get(
           `
           SELECT
             o.id,
-            o.tipo,
+            o.tipo AS tipo,
             o.competencia,
             o.vencimento,
             o.status,
@@ -112,6 +112,8 @@ router.get(
           FROM obrigacoes o
           INNER JOIN empresas e
             ON e.id = o.empresa_id
+          INNER JOIN tipos_obrigacao t
+            ON t.id = o.tipo_obrigacao_id
           ORDER BY o.vencimento
           `
         );
@@ -120,7 +122,7 @@ router.get(
           `
           SELECT
             o.id,
-            o.tipo,
+            t.nome AS tipo,
             o.competencia,
             o.vencimento,
             o.status,
@@ -128,6 +130,8 @@ router.get(
           FROM obrigacoes o
           INNER JOIN empresas e
             ON e.id = o.empresa_id
+          INNER JOIN tipos_obrigacao t
+            ON t.id = o.tipo_obrigacao_id
           INNER JOIN empresa_usuarios eu
             ON eu.empresa_id = e.id
           WHERE eu.usuario_id = $1
