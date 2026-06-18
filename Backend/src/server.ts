@@ -10,6 +10,7 @@ import meRoutes from "./routes/meRoutes";
 import obrigacaoRoutes from "./routes/obrigacaoRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
 import relatorioRoutes from "./routes/relatorioRoutes";
+import agendaRoutes from "./routes/agendaRoutes";
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use("/me", meRoutes);
 app.use("/obrigacoes", obrigacaoRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/relatorios", relatorioRoutes);
+app.use("/agenda", agendaRoutes);
 
 app.get("/", async (req, res) => {
   const result = await pool.query("SELECT NOW()");
