@@ -11,6 +11,7 @@ import obrigacaoRoutes from "./routes/obrigacaoRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
 import relatorioRoutes from "./routes/relatorioRoutes";
 import agendaRoutes from "./routes/agendaRoutes";
+import tipoObrigacaoRoutes from "./routes/tipoObrigacaoRoutes";
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use("/obrigacoes", obrigacaoRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/relatorios", relatorioRoutes);
 app.use("/agenda", agendaRoutes);
+app.use("/tipos-obrigacao", tipoObrigacaoRoutes);
 
 app.get("/", async (req, res) => {
   const result = await pool.query("SELECT NOW()");

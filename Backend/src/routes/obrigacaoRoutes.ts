@@ -13,7 +13,7 @@ router.post(
     try {
       const {
         empresaId,
-        tipo,
+        tipoObrigacaoId,
         competencia,
         vencimento,
         observacao,
@@ -30,23 +30,42 @@ router.post(
         });
       }
 
+      const tipoObrigacao = await pool.query(
+        `
+        SELECT
+          id,
+          nome
+        FROM tipos_obrigacao
+        WHERE id = $1
+        `,
+        [tipoObrigacaoId]
+      );
+
+if (tipoObrigacao.rows.length === 0) {
+  return res.status(404).json({
+    message: "Tipo de obrigação não encontrado",
+  });
+}
+
       const result = await pool.query(
         `
         INSERT INTO obrigacoes
         (
           empresa_id,
           tipo,
+          tipo_obrigacao_id,
           competencia,
           vencimento,
           observacao
         )
         VALUES
-        ($1, $2, $3, $4, $5)
+        ($1, $2, $3, $4, $5, $6)
         RETURNING id
         `,
         [
           empresaId,
-          tipo,
+          tipoObrigacao.rows[0].nome,
+          tipoObrigacaoId,
           competencia,
           vencimento,
           observacao,
