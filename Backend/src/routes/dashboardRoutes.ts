@@ -71,12 +71,14 @@ router.get(
           SELECT
             o.id,
             e.razao_social,
-            o.tipo,
+            t.nome AS tipo,
             o.vencimento,
             o.status
           FROM obrigacoes o
           INNER JOIN empresas e
             ON e.id = o.empresa_id
+          INNER JOIN tipos_obrigacao t
+            ON t.id = o.tipo_obrigacao_id
           WHERE
             o.status = 'PENDENTE'
             AND o.vencimento BETWEEN CURRENT_DATE
@@ -89,12 +91,14 @@ router.get(
           SELECT
             o.id,
             e.razao_social,
-            o.tipo,
+            t.nome AS tipo,
             o.vencimento,
             o.status
           FROM obrigacoes o
           INNER JOIN empresas e
             ON e.id = o.empresa_id
+          INNER JOIN tipos_obrigacao t
+            ON t.id = o.tipo_obrigacao_id
           INNER JOIN empresa_usuarios eu
             ON eu.empresa_id = e.id
           WHERE

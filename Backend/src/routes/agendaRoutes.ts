@@ -22,13 +22,15 @@ router.get(
         SELECT
           o.id,
           e.razao_social,
-          o.tipo,
+          t.nome AS tipo,
           o.competencia,
           o.vencimento,
           o.status
         FROM obrigacoes o
         INNER JOIN empresas e
           ON e.id = o.empresa_id
+        INNER JOIN tipos_obrigacao t
+          ON t.id = o.tipo_obrigacao_ID
       `;
 
       const params: any[] = [];
