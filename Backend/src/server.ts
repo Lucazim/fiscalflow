@@ -12,6 +12,7 @@ import dashboardRoutes from "./routes/dashboardRoutes";
 import relatorioRoutes from "./routes/relatorioRoutes";
 import agendaRoutes from "./routes/agendaRoutes";
 import tipoObrigacaoRoutes from "./routes/tipoObrigacaoRoutes";
+import notificacaoRoutes from "./routes/notificacaoRoutes";
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use("/dashboard", dashboardRoutes);
 app.use("/relatorios", relatorioRoutes);
 app.use("/agenda", agendaRoutes);
 app.use("/tipos-obrigacao", tipoObrigacaoRoutes);
+app.use("/notificacoes", notificacaoRoutes);
 
 app.get("/", async (req, res) => {
   const result = await pool.query("SELECT NOW()");
