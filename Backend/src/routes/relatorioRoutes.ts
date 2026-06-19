@@ -15,13 +15,15 @@ router.get(
       let query = `
         SELECT
           e.razao_social,
-          o.tipo,
+          t.nome AS tipo,
           o.competencia,
           o.vencimento,
           o.status
         FROM obrigacoes o
         INNER JOIN empresas e
           ON e.id = o.empresa_id
+        INNER JOIN tipos_obrigacao t
+          ON t.id = o.tipo_obrigacao_id
         WHERE 1=1
       `;
 
@@ -118,13 +120,15 @@ router.get(
       let query = `
         SELECT
           e.razao_social,
-          o.tipo,
+          t.nome AS tipo,
           o.competencia,
           o.vencimento,
           o.status
         FROM obrigacoes o
         INNER JOIN empresas e
           ON e.id = o.empresa_id
+        INNER JOIN tipos_obrigacao t
+          ON t.id = o.tipo_obrigacao_id
         WHERE 1=1
       `;
 
@@ -188,7 +192,7 @@ router.get(
       let query = `
         SELECT
           o.id,
-          o.tipo,
+          t.nome AS tipo,
           o.competencia,
           o.vencimento,
           o.status,
@@ -196,6 +200,8 @@ router.get(
         FROM obrigacoes o
         INNER JOIN empresas e
           ON e.id = o.empresa_id
+        INNER JOIN tipos_obrigacao t
+          ON t.id = o.tipo_obrigacao_id
         WHERE 1=1
       `;
 
