@@ -23,17 +23,28 @@ if (
       o.id,
       t.nome AS tipo,
       e.razao_social,
-      o.vencimento
+      o.vencimento,
+      o.status
     FROM obrigacoes o
     INNER JOIN empresas e
       ON e.id = o.empresa_id
     INNER JOIN tipos_obrigacao t
       ON t.id = o.tipo_obrigacao_id
     WHERE
+    (
+      o.status = 'ATRASADO'
+    OR (
       o.status = 'PENDENTE'
       AND o.vencimento BETWEEN CURRENT_DATE
       AND CURRENT_DATE + INTERVAL '3 days'
-    ORDER BY o.vencimento
+    )
+  )
+    ORDER BY
+      CASE
+        WHEN o.status = 'ATRASADO' THEN 0
+        ELSE 1
+      END,
+      o.vencimento
     `
   );
 } else {
@@ -43,7 +54,8 @@ if (
       o.id,
       t.nome AS tipo,
       e.razao_social,
-      o.vencimento
+      o.vencimento,
+      o.status
     FROM obrigacoes o
     INNER JOIN empresas e
       ON e.id = o.empresa_id
@@ -53,10 +65,20 @@ if (
       ON eu.empresa_id = e.id
     WHERE
       eu.usuario_id = $1
-      AND o.status = 'PENDENTE'
+    AND (
+      o.status = 'ATRASADO'
+    OR (
+      o.status = 'PENDENTE'
       AND o.vencimento BETWEEN CURRENT_DATE
       AND CURRENT_DATE + INTERVAL '3 days'
-    ORDER BY o.vencimento
+    )
+  )
+    ORDER BY
+      CASE
+        WHEN o.status = 'ATRASADO' THEN 0
+        ELSE 1
+      END,
+      o.vencimento
     `,
     [usuario.id]
   );
@@ -76,10 +98,13 @@ const notificacoes = result.rows.map((item) => {
     diferencaMs / (1000 * 60 * 60 * 24)
   );
 
-  let titulo: string;
-  let prioridade: string;
+let titulo: string;
+let prioridade: string;
 
-if (diasRestantes === 0) {
+if (item.status === "ATRASADO") {
+  titulo = `${item.tipo} está atrasado`;
+  prioridade = "ATRASADO";
+} else if (diasRestantes === 0) {
   titulo = `${item.tipo} vence hoje`;
   prioridade = "URGENTE";
 } else if (diasRestantes === 1) {
@@ -96,9 +121,13 @@ if (diasRestantes === 0) {
   return {
     titulo,
     mensagem:
-      `A obrigação ${item.tipo} da empresa ` +
-      `${item.razao_social} vence em ` +
-      `${vencimento.toISOString().split("T")[0]}`,
+      item.status === "ATRASADO"
+        ? `A obrigação ${item.tipo} da empresa ` +
+          `${item.razao_social} venceu há ${Math.abs(diasRestantes)} dia(s), em ` +
+          `${vencimento.toISOString().split("T")[0]}`
+        : `A obrigação ${item.tipo} da empresa ` +
+          `${item.razao_social} vence em ` +
+          `${vencimento.toISOString().split("T")[0]}`,
     prioridade,
     diasRestantes,
     obrigacaoId: item.id,
