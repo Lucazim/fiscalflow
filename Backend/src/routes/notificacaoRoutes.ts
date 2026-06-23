@@ -77,14 +77,21 @@ const notificacoes = result.rows.map((item) => {
   );
 
   let titulo: string;
+  let prioridade: string;
 
-  if (diasRestantes === 0) {
-    titulo = `${item.tipo} vence hoje`;
-  } else if (diasRestantes === 1) {
-    titulo = `${item.tipo} vence amanhã`;
-  } else {
-    titulo = `${item.tipo} vence em ${diasRestantes} dias`;
-  }
+if (diasRestantes === 0) {
+  titulo = `${item.tipo} vence hoje`;
+  prioridade = "URGENTE";
+} else if (diasRestantes === 1) {
+  titulo = `${item.tipo} vence amanhã`;
+  prioridade = "URGENTE";
+} else if (diasRestantes === 2) {
+  titulo = `${item.tipo} vence em 2 dias`;
+  prioridade = "ATENCAO";
+} else {
+  titulo = `${item.tipo} vence em ${diasRestantes} dias`;
+  prioridade = "NORMAL";
+}
 
   return {
     titulo,
@@ -92,6 +99,7 @@ const notificacoes = result.rows.map((item) => {
       `A obrigação ${item.tipo} da empresa ` +
       `${item.razao_social} vence em ` +
       `${vencimento.toISOString().split("T")[0]}`,
+    prioridade,
     diasRestantes,
     obrigacaoId: item.id,
   };
