@@ -62,23 +62,42 @@ if (
   );
 }
 
-const notificacoes = result.rows.map(
-  (item) => ({
-    titulo: `${item.tipo} vence em breve`,
+const notificacoes = result.rows.map((item) => {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
+  const vencimento = new Date(item.vencimento);
+  vencimento.setHours(0, 0, 0, 0);
+
+  const diferencaMs =
+    vencimento.getTime() - hoje.getTime();
+
+  const diasRestantes = Math.round(
+    diferencaMs / (1000 * 60 * 60 * 24)
+  );
+
+  let titulo: string;
+
+  if (diasRestantes === 0) {
+    titulo = `${item.tipo} vence hoje`;
+  } else if (diasRestantes === 1) {
+    titulo = `${item.tipo} vence amanhã`;
+  } else {
+    titulo = `${item.tipo} vence em ${diasRestantes} dias`;
+  }
+
+  return {
+    titulo,
     mensagem:
       `A obrigação ${item.tipo} da empresa ` +
       `${item.razao_social} vence em ` +
-      `${new Date(item.vencimento)
-        .toISOString()
-        .split("T")[0]}`,
+      `${vencimento.toISOString().split("T")[0]}`,
+    diasRestantes,
     obrigacaoId: item.id,
-  })
-);
+  };
+});
 
 return res.json(notificacoes);
-
-      return res.json(result.rows);
-
     } catch (error) {
       console.error(error);
 
