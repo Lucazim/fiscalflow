@@ -84,7 +84,7 @@ if (
   );
 }
 
-const notificacoes = result.rows.map((item) => {
+for (const item of result.rows) {
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
 
@@ -98,48 +98,118 @@ const notificacoes = result.rows.map((item) => {
     diferencaMs / (1000 * 60 * 60 * 24)
   );
 
-let titulo: string;
-let prioridade: string;
+  let titulo: string;
 
-if (item.status === "ATRASADO") {
-  titulo = `${item.tipo} está atrasado`;
-  prioridade = "ATRASADO";
-} else if (diasRestantes === 0) {
-  titulo = `${item.tipo} vence hoje`;
-  prioridade = "URGENTE";
-} else if (diasRestantes === 1) {
-  titulo = `${item.tipo} vence amanhã`;
-  prioridade = "URGENTE";
-} else if (diasRestantes === 2) {
-  titulo = `${item.tipo} vence em 2 dias`;
-  prioridade = "ATENCAO";
-} else {
-  titulo = `${item.tipo} vence em ${diasRestantes} dias`;
-  prioridade = "NORMAL";
+  if (item.status === "ATRASADO") {
+    titulo = `${item.tipo} está atrasado`;
+  } else if (diasRestantes === 0) {
+    titulo = `${item.tipo} vence hoje`;
+  } else if (diasRestantes === 1) {
+    titulo = `${item.tipo} vence amanhã`;
+  } else {
+    titulo = `${item.tipo} vence em ${diasRestantes} dias`;
+  }
+
+  const mensagem =
+    item.status === "ATRASADO"
+      ? `A obrigação ${item.tipo} da empresa ` +
+        `${item.razao_social} venceu há ${Math.abs(diasRestantes)} dia(s), em ` +
+        `${vencimento.toISOString().split("T")[0]}`
+      : `A obrigação ${item.tipo} da empresa ` +
+        `${item.razao_social} vence em ` +
+        `${vencimento.toISOString().split("T")[0]}`;
+
+  await pool.query(
+    `
+    INSERT INTO notificacoes
+    (
+      usuario_id,
+      obrigacao_id,
+      titulo,
+      mensagem
+    )
+    VALUES
+    ($1, $2, $3, $4)
+    ON CONFLICT (usuario_id, obrigacao_id)
+    DO NOTHING
+    `,
+    [
+      usuario.id,
+      item.id,
+      titulo,
+      mensagem,
+    ]
+  );
 }
 
-  return {
-    titulo,
-    mensagem:
-      item.status === "ATRASADO"
-        ? `A obrigação ${item.tipo} da empresa ` +
-          `${item.razao_social} venceu há ${Math.abs(diasRestantes)} dia(s), em ` +
-          `${vencimento.toISOString().split("T")[0]}`
-        : `A obrigação ${item.tipo} da empresa ` +
-          `${item.razao_social} vence em ` +
-          `${vencimento.toISOString().split("T")[0]}`,
-    prioridade,
-    diasRestantes,
-    obrigacaoId: item.id,
-  };
-});
+const notificacoes = await pool.query(
+  `
+  SELECT
+    n.id,
+    n.titulo,
+    n.mensagem,
+    n.lida,
+    n.criada_em,
+    n.obrigacao_id AS "obrigacaoId"
+  FROM notificacoes n
+  WHERE n.usuario_id = $1
+  ORDER BY n.criada_em DESC
+  `,
+  [usuario.id]
+);
 
-return res.json(notificacoes);
+return res.json(notificacoes.rows);
     } catch (error) {
       console.error(error);
 
       return res.status(500).json({
         message: "Erro ao listar notificações",
+      });
+    }
+  }
+);
+
+router.patch(
+  "/:id/lida",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const usuario = (req as any).usuario;
+
+      const result = await pool.query(
+        `
+        UPDATE notificacoes
+        SET lida = true
+        WHERE
+          id = $1
+          AND usuario_id = $2
+        RETURNING
+          id,
+          titulo,
+          mensagem,
+          lida,
+          criada_em,
+          obrigacao_id AS "obrigacaoId"
+        `,
+        [id, usuario.id]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          message: "Notificação não encontrada",
+        });
+      }
+
+      return res.json({
+        message: "Notificação marcada como lida",
+        notificacao: result.rows[0],
+      });
+    } catch (error) {
+      console.error(error);
+
+      return res.status(500).json({
+        message: "Erro ao marcar notificação como lida",
       });
     }
   }
