@@ -10,6 +10,7 @@ router.get(
   async (req, res) => {
     try {
       const usuario = (req as any).usuario;
+      const { apenasNaoLidas } = req.query;
 
       let result;
 
@@ -152,10 +153,18 @@ const notificacoes = await pool.query(
     n.criada_em,
     n.obrigacao_id AS "obrigacaoId"
   FROM notificacoes n
-  WHERE n.usuario_id = $1
-  ORDER BY n.criada_em DESC
+  WHERE
+  n.usuario_id = $1
+  AND (
+    $2::boolean IS NOT TRUE
+    OR n.lida = false
+  )
+ORDER BY n.criada_em DESC
   `,
-  [usuario.id]
+  [
+  usuario.id,
+  apenasNaoLidas === "true",
+  ]
 );
 
 return res.json(notificacoes.rows);
