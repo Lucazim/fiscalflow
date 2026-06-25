@@ -178,6 +178,37 @@ return res.json(notificacoes.rows);
   }
 );
 
+router.get(
+  "/resumo",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const usuario = (req as any).usuario;
+
+      const result = await pool.query(
+        `
+        SELECT
+          COUNT(*)::int AS total,
+          COUNT(*) FILTER (
+            WHERE lida = false
+          )::int AS "naoLidas"
+        FROM notificacoes
+        WHERE usuario_id = $1
+        `,
+        [usuario.id]
+      );
+
+      return res.json(result.rows[0]);
+    } catch (error) {
+      console.error(error);
+
+      return res.status(500).json({
+        message: "Erro ao gerar resumo de notificações",
+      });
+    }
+  }
+);
+
 router.patch(
   "/:id/lida",
   authMiddleware,
