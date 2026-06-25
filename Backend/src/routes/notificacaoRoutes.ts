@@ -210,6 +210,39 @@ router.get(
 );
 
 router.patch(
+  "/marcar-todas-lidas",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const usuario = (req as any).usuario;
+
+      const result = await pool.query(
+        `
+        UPDATE notificacoes
+        SET lida = true
+        WHERE
+          usuario_id = $1
+          AND lida = false
+        RETURNING id
+        `,
+        [usuario.id]
+      );
+
+      return res.json({
+        message: "Notificações marcadas como lidas",
+        quantidadeAtualizada: result.rows.length,
+      });
+    } catch (error) {
+      console.error(error);
+
+      return res.status(500).json({
+        message: "Erro ao marcar notificações como lidas",
+      });
+    }
+  }
+);
+
+router.patch(
   "/:id/lida",
   authMiddleware,
   async (req, res) => {
